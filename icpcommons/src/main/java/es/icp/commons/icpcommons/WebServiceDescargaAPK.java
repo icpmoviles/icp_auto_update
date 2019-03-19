@@ -180,7 +180,7 @@ public class WebServiceDescargaAPK extends AsyncTask<Object, Integer, Boolean> {
                 try
                 {
                     jsonObject = new JSONObject();
-                    jsonObject.put("retCode", "0");
+                    jsonObject.put("RETCODE", 0);
                 }
                 catch (JSONException e)
                 {
