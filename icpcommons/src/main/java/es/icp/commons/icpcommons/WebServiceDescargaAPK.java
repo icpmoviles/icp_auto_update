@@ -53,7 +53,6 @@ public class WebServiceDescargaAPK extends AsyncTask<String, String, String> {
         sb = new StringBuffer();
     }
 
-
     @Override
     protected void onPreExecute()
     {
@@ -65,7 +64,6 @@ public class WebServiceDescargaAPK extends AsyncTask<String, String, String> {
         pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         pd.show();
     }
-
     @Override
     protected void onProgressUpdate(String... progress)
     {
