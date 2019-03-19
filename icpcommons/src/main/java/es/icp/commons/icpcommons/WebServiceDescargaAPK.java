@@ -3,12 +3,17 @@ package es.icp.commons.icpcommons;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.v4.content.FileProvider;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,8 +23,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.net.URLConnection;
 
-public class WebServiceDescargaAPK extends AsyncTask<Object, Integer, Boolean> {
+public class WebServiceDescargaAPK extends AsyncTask<String, String, String> {
 
     private StringBuffer sb;
     private InterfazListener listener;
@@ -28,6 +34,7 @@ public class WebServiceDescargaAPK extends AsyncTask<Object, Integer, Boolean> {
     private String mensaje;
     private String carpeta;
     private String nombreAPK;
+
 
     /**
      * @param context  si no es necesario vendrá a null.
@@ -46,6 +53,7 @@ public class WebServiceDescargaAPK extends AsyncTask<Object, Integer, Boolean> {
         sb = new StringBuffer();
     }
 
+
     @Override
     protected void onPreExecute()
     {
@@ -59,16 +67,17 @@ public class WebServiceDescargaAPK extends AsyncTask<Object, Integer, Boolean> {
     }
 
     @Override
-    protected void onProgressUpdate(Integer... progress)
+    protected void onProgressUpdate(String... progress)
     {
         //        if (progress[0] == 1)
         //        {
         //            //pd.setMessage(context.getString(R.string.descargando_nueva_version_del_servidor));
         //            pd.setMessage(webServiceMensaje);
         //        }
-        pd.setIndeterminate(false);
-        pd.setMax(100);
-        pd.setProgress(progress[0]);
+//        pd.setIndeterminate(false);
+//        pd.setMax(100);
+//        pd.setProgress(progress[0]);
+        pd.setProgress(Integer.parseInt(progress[0]));
     }
 
     /**
@@ -78,121 +87,64 @@ public class WebServiceDescargaAPK extends AsyncTask<Object, Integer, Boolean> {
      * false si no se ha podido obtener uan respuesta
      */
     @Override
-    protected Boolean doInBackground(Object... params)
+    protected String doInBackground(String... params)
     {
-        InputStream input = null;
-        OutputStream output = null;
-        HttpURLConnection urlConnection = null;
-        try
-        {
-            URL url;
-            url = new URL(String.valueOf(params[0]));
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("POST");
-            urlConnection.setDoInput(true);
-            urlConnection.setDoOutput(true);
-            urlConnection.setUseCaches(false);
-            urlConnection.setConnectTimeout(50000);
-            urlConnection.setReadTimeout(50000);
-            urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.connect();
-            int HttpResult = urlConnection.getResponseCode();
-            if (HttpResult == HttpURLConnection.HTTP_OK)
-            {
-                int longitudApk = urlConnection.getContentLength();
-//                File carpetaAplicacion = new File(Environment.getExternalStorageDirectory(), "GestorIcpPTL");
-                File carpetaAplicacion = new File(Environment.getExternalStorageDirectory(), carpeta);
-                if (!carpetaAplicacion.exists())
-                {
-                    carpetaAplicacion.mkdir();
-                }
-                File apk = new File(carpetaAplicacion, nombreAPK);
-//                File apk = new File(carpetaAplicacion, "GestorIcpPTL.apk");
-                if(apk.exists())
-                {
-                    apk.delete();
-                    apk.createNewFile();
-                }
-                //Environment.getExternalStorageDirectory().toString() + File.separator + Constantes.carpetaAplicacion + File.separator + Constantes.nombreApk;
-                input = urlConnection.getInputStream();
-                output = new FileOutputStream(apk);
-                byte data[] = new byte[4096];
-                long total = 0;
-                int count;
-                while ((count = input.read(data)) != -1)
-                {
-                    if (isCancelled())
-                    {
-                        input.close();
-                        return null;
-                    }
-                    total += count;
-                    if (longitudApk > 0)
-                    {
-                        publishProgress((int) (total * 100 / longitudApk));
-                    }
-                    output.write(data, 0, count);
-                }
-                return true;
+        int count;
+        try {
+            URL url = new URL(params[0]);
+            URLConnection conection = url.openConnection();
+            conection.connect();
+
+            // this will be useful so that you can show a tipical 0-100%
+            // progress bar
+            int lenghtOfFile = conection.getContentLength();
+
+            // download the file
+            InputStream input = new BufferedInputStream(url.openStream(),
+                    8192);
+
+            // Output stream
+            OutputStream output = new FileOutputStream(Environment.getExternalStorageDirectory().toString() + nombreAPK);
+
+            byte data[] = new byte[1024];
+
+            long total = 0;
+
+            while ((count = input.read(data)) != -1) {
+                total += count;
+                // publishing the progress....
+                // After this onProgressUpdate will be called
+                publishProgress("" + (int) ((total * 100) / lenghtOfFile));
+
+                // writing data to file
+                output.write(data, 0, count);
             }
+
+            // flushing output
+            output.flush();
+
+            // closing streams
+            output.close();
+            input.close();
+
+        } catch (Exception e) {
+            Log.e("Error: ", e.getMessage());
         }
-        catch (MalformedURLException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        } finally
-        {
-            try
-            {
-                if (output != null)
-                {
-                    output.close();
-                }
-                if (input != null)
-                {
-                    input.close();
-                }
-            }
-            catch (IOException ignorado)
-            {
-                ignorado.printStackTrace();
-            }
-            if (urlConnection != null)
-            {
-                urlConnection.disconnect();
-            }
-        }
-        return false;
+
+        return null;
     }
 
     @Override
-    protected void onPostExecute(final Boolean success)
+    protected void onPostExecute(final String file_url)
     {
         pd.dismiss();
-        JSONObject jsonObject = null;
-        if (listener != null)
-        {
-            if (success)
-            {
-                try
-                {
-                    jsonObject = new JSONObject();
-                    jsonObject.put("RETCODE", 0);
-                }
-                catch (JSONException e)
-                {
-                    e.printStackTrace();
-                }
-                listener.resultadoAsincrono(jsonObject);
-            }
-            else
-            {
-                listener.resultadoAsincrono(null);
-            }
-        }
+        File apk = new File(Environment.getExternalStorageDirectory().toString() + nombreAPK);
+        Uri uriFile = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", apk);
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setDataAndType(uriFile, "application/vnd.android.package-archive");
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        context.startActivity(i);
     }
 
     @Override
