@@ -115,7 +115,7 @@ public class WebServiceDescargaAPK extends AsyncTask<String, String, String> {
 
             InputStream input = new BufferedInputStream(url.openStream(), 8192);
             // Output stream
-            OutputStream output = new FileOutputStream(Environment.getExternalStorageDirectory().toString() + nombreAPK);
+            OutputStream output = new FileOutputStream(apk);
 
             byte data[] = new byte[1024];
 
