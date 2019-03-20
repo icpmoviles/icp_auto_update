@@ -72,10 +72,11 @@ public class WebServiceDescargaAPK extends AsyncTask<String, String, String> {
         //            //pd.setMessage(context.getString(R.string.descargando_nueva_version_del_servidor));
         //            pd.setMessage(webServiceMensaje);
         //        }
-//        pd.setIndeterminate(false);
-//        pd.setMax(100);
-//        pd.setProgress(progress[0]);
+        pd.setIndeterminate(false);
+        pd.setMax(100);
         pd.setProgress(Integer.parseInt(progress[0]));
+//        pd.setProgress(progress[0]);
+
     }
 
     /**
