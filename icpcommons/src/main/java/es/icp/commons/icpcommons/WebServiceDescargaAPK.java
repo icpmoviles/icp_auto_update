@@ -31,24 +31,24 @@ public class WebServiceDescargaAPK extends AsyncTask<String, String, String> {
     private InterfazListener listener;
     private ProgressDialog pd;
     private Context context;
-    private String mensaje;
-    private String carpeta;
+    private String mensaje_progress;
+    private String applicationId;
     private String nombreAPK;
 
 
     /**
      * @param context  si no es necesario vendrá a null.
-     * @param mensaje  Primero el webServiceMensaje de carga normal, segundo el webServiceMensaje del progress update.
-     * @param carpeta  La ruta de la carpeta donde se guardara temporalmente la nueva version de la apk.
+     * @param mensaje_progress  Primero el webServiceMensaje de carga normal, segundo el webServiceMensaje del progress update.
+     * @param applicationId  La ruta de la carpeta donde se guardara temporalmente la nueva version de la apk.
      * @param nombreAPK  El nombre de la APK.
      * @param listener
      */
-    public WebServiceDescargaAPK(Context context, String mensaje, String carpeta, String nombreAPK, InterfazListener listener)
+    public WebServiceDescargaAPK(Context context, String mensaje_progress, String applicationId, String nombreAPK, InterfazListener listener)
     {
         this.context = context;
-        this.mensaje = mensaje;
+        this.mensaje_progress = mensaje_progress;
         this.listener = listener;
-        this.carpeta = carpeta;
+        this.applicationId = applicationId;
         this.nombreAPK = nombreAPK;
         sb = new StringBuffer();
     }
@@ -58,7 +58,7 @@ public class WebServiceDescargaAPK extends AsyncTask<String, String, String> {
     {
         super.onPreExecute();
         pd = new ProgressDialog(context);
-        pd.setMessage(mensaje);
+        pd.setMessage(mensaje_progress);
         pd.setCancelable(false);
         pd.setIndeterminate(true);
         pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -137,7 +137,7 @@ public class WebServiceDescargaAPK extends AsyncTask<String, String, String> {
     {
         pd.dismiss();
         File apk = new File(Environment.getExternalStorageDirectory().toString() + File.separator + nombreAPK);
-        Uri uriFile = FileProvider.getUriForFile(context, carpeta, apk);
+        Uri uriFile = FileProvider.getUriForFile(context, applicationId, apk);
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setDataAndType(uriFile, "application/vnd.android.package-archive");
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
