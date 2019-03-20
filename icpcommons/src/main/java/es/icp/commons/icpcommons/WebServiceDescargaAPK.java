@@ -137,7 +137,7 @@ public class WebServiceDescargaAPK extends AsyncTask<String, String, String> {
     {
         pd.dismiss();
         File apk = new File(Environment.getExternalStorageDirectory().toString() + nombreAPK);
-        Uri uriFile = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", apk);
+        Uri uriFile = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID, apk);
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setDataAndType(uriFile, "application/vnd.android.package-archive");
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
